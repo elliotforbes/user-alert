@@ -1,33 +1,50 @@
 import board
 import neopixel
 import time
+from PIL import Image, ImageDraw
 
 pixel_pin = board.D18
 num_pixels = 256
 
 ORDER = neopixel.GRB
 
+
 pixels = neopixel.NeoPixel(
-    pixel_pin, num_pixels, brightness=0.01, auto_write=False, pixel_order=ORDER
+    pixel_pin, num_pixels, brightness=0.1, auto_write=False, pixel_order=ORDER
 )
 
-rows = 8
-cols = 32
+def draw_image(offset):
+    img = Image.new('RGB', (32, 8), color = (0,0,0))
+    d = ImageDraw.Draw(img)
+    d.text((1-offset,-2), "12300", fill=(255,255,255))
+    return img
 
-array = [ [(255,255,255)]*cols for i in range(rows)]
 
+def main():
+    print("Starting YouTube Subscriber Clock")
+    offset = 0
+    while True:
 
+        rows = 8
+        cols = 32
 
-for i in range(len(array)):
-    for j in range(len(array[0])):
-        index = i*cols + j
-        if i % 2 == 0:
-            pixels[i*cols + j] = array[i][j]
-        else:
-            pixels[i*cols + 31-j] = array[i][j]
+        img = draw_image(offset)
+
+        array = list(img.getdata())
+
+        index = 0
+        for i in range(rows):
+            for j in range(cols):
+                index = i*cols + j
+                if i % 2 == 0:
+                    pixels[i*cols + j] = array[index]
+                else:
+                    pixels[i*cols + 31-j] = array[index]
 
         pixels.show()
-        time.sleep(0.2)
+        offset += 1
+        if offset >= 32:
+            offset = -32
 
-
-pixels.hide()
+if __name__ == '__main__':
+    main()
